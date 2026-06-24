@@ -23,6 +23,7 @@ build:
 name: Continuous Integration - Build
 runs-on: ubuntu-latest
 
+```
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
@@ -42,12 +43,14 @@ steps:
     with:
       name: ${{ env.ARTIFACT_NAME }}
       path: target/*.jar
+```
 
 test:
 name: Continuous Testing - Unit Test
 runs-on: ubuntu-latest
 needs: build
 
+```
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
@@ -61,12 +64,14 @@ steps:
 
   - name: Run unit tests
     run: mvn -B test
+```
 
 inspect:
 name: Continuous Inspection - SonarCloud
 runs-on: ubuntu-latest
 needs: test
 
+```
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
@@ -90,6 +95,7 @@ steps:
         -Dsonar.organization=adefathian \
         -Dsonar.host.url=https://sonarcloud.io \
         -Dsonar.qualitygate.wait=true
+```
 
 deploy-staging:
 name: Continuous Delivery - Deploy to Staging
@@ -99,6 +105,7 @@ if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 environment:
 name: staging
 
+```
 steps:
   - name: Download build artifact
     uses: actions/download-artifact@v4
@@ -111,6 +118,7 @@ steps:
       echo "Deploying DiagramMaster artifact to staging environment..."
       ls -lh staging
       echo "Staging deployment completed successfully."
+```
 
 deploy-production:
 name: Continuous Delivery - Production Approval
@@ -120,6 +128,7 @@ if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 environment:
 name: production
 
+```
 steps:
   - name: Download build artifact
     uses: actions/download-artifact@v4
@@ -133,3 +142,4 @@ steps:
       echo "Delivering DiagramMaster artifact to production environment..."
       ls -lh production
       echo "Production delivery completed successfully."
+```
