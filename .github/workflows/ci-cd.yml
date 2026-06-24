@@ -89,6 +89,7 @@ jobs:
             -Dsonar.projectKey=fahtinurai_TUGAS_BESAR_DPBO \
             -Dsonar.organization=adefathian \
             -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.qualitygate.wait=true
 
   deploy-staging:
