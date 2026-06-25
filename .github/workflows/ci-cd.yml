@@ -7,7 +7,6 @@ on:
       - main
   pull_request:
     branches:
-      - dev
       - main
   workflow_dispatch:
 
@@ -18,7 +17,6 @@ env:
   JAVA_VERSION: '17'
   ARTIFACT_NAME: DiagramMaster
   SONAR_PROJECT_KEY: fahtinurai_TUGAS_BESAR_DPBO
-  SONAR_ORGANIZATION: adefathian
   SONAR_HOST_URL: https://sonarcloud.io
 
 jobs:
@@ -69,6 +67,7 @@ jobs:
     name: Continuous Inspection - SonarCloud
     runs-on: ubuntu-latest
     needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout repository
@@ -82,6 +81,13 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
       - name: Validate SonarCloud token
         env:
@@ -104,15 +110,14 @@ jobs:
 
       - name: Run SonarCloud analysis with Maven Scanner
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           SONAR_TOKEN_CLEAN=$(printf "%s" "$SONAR_TOKEN" | tr -d '\r\n')
 
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
-            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
-            -Dsonar.organization="$SONAR_ORGANIZATION" \
-            -Dsonar.host.url="$SONAR_HOST_URL" \
+          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=fahtinurai_TUGAS_BESAR_DPBO \
+            -Dsonar.organization=adefathian \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token="$SONAR_TOKEN_CLEAN" \
             -Dsonar.qualitygate.wait=true
 
