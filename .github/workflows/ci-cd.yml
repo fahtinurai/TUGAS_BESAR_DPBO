@@ -17,6 +17,7 @@ env:
   JAVA_VERSION: '17'
   ARTIFACT_NAME: DiagramMaster
   SONAR_PROJECT_KEY: fahtinurai_TUGAS_BESAR_DPBO
+  SONAR_ORGANIZATION: adefathian
   SONAR_HOST_URL: https://sonarcloud.io
 
 jobs:
@@ -82,12 +83,8 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Build and generate reports for SonarCloud
+        run: mvn -B clean verify
 
       - name: Validate SonarCloud token
         env:
@@ -108,17 +105,20 @@ jobs:
           curl -s -u "$SONAR_TOKEN_CLEAN:" "$SONAR_HOST_URL/api/components/show?component=$SONAR_PROJECT_KEY"
           echo ""
 
-      - name: Run SonarCloud analysis with Maven Scanner
+      - name: Run SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          SONAR_TOKEN_CLEAN=$(printf "%s" "$SONAR_TOKEN" | tr -d '\r\n')
-
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=fahtinurai_TUGAS_BESAR_DPBO \
-            -Dsonar.organization=adefathian \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token="$SONAR_TOKEN_CLEAN" \
+        with:
+          args: >
+            -Dsonar.projectKey=fahtinurai_TUGAS_BESAR_DPBO
+            -Dsonar.organization=adefathian
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=src/main/java
+            -Dsonar.tests=src/test/java
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.junit.reportPaths=target/surefire-reports
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
             -Dsonar.qualitygate.wait=true
 
   deploy-staging:
